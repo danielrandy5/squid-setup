@@ -3,3 +3,4 @@
     service:
       name: squid
       state: restarted
+      enabled: true
