@@ -1,0 +1,24 @@
+---
+  - name: install squid
+    yum:
+      name: squid
+      state: latest
+
+  - name: start service
+    service:
+      name: squid
+      state: started
+      enabled: true
+
+  - name: setup squid.conf
+    template: 
+      src: squid.conf.j2
+      dest: /etc/squid/squid.conf
+  
+  - name: Copy Whitlist with url
+    copy:
+      src:   whitelist.txt
+      dest:  /etc/squid/whitelist.txt
+    notify: restart squid 
+
+    

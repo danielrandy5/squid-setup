@@ -1,0 +1,99 @@
+#
+# Recommended minimum configuration:
+#
+
+# Example rule allowing access from your local networks.
+# Adapt to list your (internal) IP networks from where browsing
+# should be allowed
+
+### Green HA-Proxy ##
+acl localnet src 172.24.61.129 #eshaproxy-wc-01p.sys.comcast.net
+acl localnet src 10.22.207.235 #eshaproxy-po-1p.sys.comcast.net
+acl localnet src 10.22.55.114  #eshaproxy-ch2-1p.sys.comcast.net
+acl localnet src 10.146.215.165 #eshaproxy-as-1p.sys.comcast.net
+acl localnet src 10.146.103.104 #eshaproxy-ch2-3p.sys.comcast.net(standby)
+###BlackZone Ha-Proxy##
+acl localnet src 172.27.12.7 #eshaproxy-wc-5p.sys.comcast.net
+acl localnet src 172.26.8.185 #eshaproxy-po-2p.sys.comcast.net
+acl localnet src 10.248.115.183 #eshaproxy-ch2-4p.sys.comcast.net
+acl localnet src 172.27.85.237 #eshaproxy-as-3p.sys.comcast.net
+acl localnet src 10.248.115.219 #eshaproxy-ch2-2p.sys.comcast.net
+acl localnet src 10.146.215.97 #eshaproxy-as-2p.sys.comcast.net
+#
+##Project 2 Servers##
+
+
+
+acl SSL_ports port 443
+acl Safe_ports port 80          # http
+#acl Safe_ports port 21          # ftp
+acl Safe_ports port 443         # https
+acl Safe_ports port 4171         # squids
+#acl Safe_ports port 70          # gopher
+#acl Safe_ports port 210         # wais
+#acl Safe_ports port 1025-65535  # unregistered ports
+#acl Safe_ports port 280         # http-mgmt
+#acl Safe_ports port 488         # gss-http
+#acl Safe_ports port 591         # filemaker
+#acl Safe_ports port 777         # multiling http
+acl CONNECT method CONNECT
+
+
+tcp_outgoing_address  {{ ansible_default_ipv4.address }}
+
+#
+# Recommended minimum Access Permission configuration:
+#
+# Deny requests to certain unsafe ports
+http_access deny !Safe_ports
+
+# Deny CONNECT to other than secure SSL ports
+http_access deny CONNECT !SSL_ports
+
+# Only allow cachemgr access from localhost
+#http_access allow localhost manager
+http_access deny manager
+
+# We strongly recommend the following be uncommented to protect innocent
+# web applications running on the proxy server who think the only
+# one who can access services on "localhost" is a local user
+#http_access deny to_localhost
+
+#
+# INSERT YOUR OWN RULE(S) HERE TO ALLOW ACCESS FROM YOUR CLIENTS
+#acl good dstdomain .google.com
+#http_access allow good
+acl whitelist dstdomain "/etc/squid/whitelist.txt"
+http_access allow localnet whitelist
+http_access deny all
+# Example rule allowing access from your local networks.
+# Adapt localnet in the ACL section to list your (internal) IP networks
+# from where browsing should be allowed
+#http_access allow localnet
+#http_access allow localhost
+
+# And finally deny all other access to this proxy
+
+http_access deny all
+
+
+# Squid normally listens to port 3128
+http_port 4171
+
+# Uncomment and adjust the following to add a disk cache directory.
+#cache_dir ufs /var/spool/squid 100 16 256
+
+# Leave coredumps in the first cache dir
+coredump_dir /var/spool/squid
+
+#
+# Add any of your own refresh_pattern entries above these.
+#
+refresh_pattern ^ftp:           1440    20%     10080
+refresh_pattern ^gopher:        1440    0%      1440
+refresh_pattern -i (/cgi-bin/|\?) 0     0%      0
+refresh_pattern .               0       20%     4320
+
+
+#visible_hostname {{ ansible_fqdn }}
+
