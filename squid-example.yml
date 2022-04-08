@@ -1,5 +1,5 @@
 ---
-  - name: Setup Squid Proxy
+  - name: Setup Squid Proxyy
     hosts: localhost 
     become: true
     roles:
