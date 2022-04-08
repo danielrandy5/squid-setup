@@ -1,6 +1,6 @@
 ---
   - name: Setup Squid Proxy
-    hosts: epsqproxy-wc-1p.sys.comcast.net  
+    hosts: localhost 
     become: true
     roles:
       - squid-setup
